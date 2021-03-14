@@ -4,6 +4,4 @@ export class Customer {
   readonly dni: string;
   readonly email: string;
   readonly password: string;
-  readonly createdAt?: Date;
-  readonly updatedAt?: Date;
 }
