@@ -18,8 +18,7 @@ export class TransactionsService {
       this.http.post(`${this.path}/transactions`, transaction).subscribe(response => {
         resolve(new Transaction(response.data));
       }, err => {
-        console.log(err)
-        throw new BadRequestException();
+        throw new BadRequestException(err);
       });
     });
   }

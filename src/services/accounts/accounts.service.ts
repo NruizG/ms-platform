@@ -90,4 +90,46 @@ export class AccountsService {
         })
     })
   }
+
+  public async withdraw(
+    accountNumber: number,
+    transaction: Transaction
+  ): Promise<Transaction> {
+    // Validate sufficient balance
+    const account = await this.getAccount(accountNumber);
+    if (account.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
+
+    // Substract balance
+    await this.patchAccount(account.id, new PatchAccountDto({
+      balance: (account.balance - transaction.amount)
+    }));
+
+    // Create transaction
+    return await this.transactionService.createTransaction({
+      amount: transaction.amount,
+      type: TransactionType.WITHDRAW,
+      account: account.id
+    });
+  }
+
+  public async loadBalance(
+    accountNumber: number,
+    transaction: Transaction
+  ): Promise<Transaction> {
+    // Validate sufficient balance
+    const account = await this.getAccount(accountNumber);
+    if (account.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
+
+    // Substract balance
+    await this.patchAccount(account.id, new PatchAccountDto({
+      balance: (account.balance + transaction.amount)
+    }));
+
+    // Create transaction
+    return await this.transactionService.createTransaction({
+      amount: transaction.amount,
+      type: TransactionType.DEPOSIT,
+      account: account.id
+    });
+  }
 }
