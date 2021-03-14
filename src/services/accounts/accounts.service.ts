@@ -116,9 +116,7 @@ export class AccountsService {
     accountNumber: number,
     transaction: Transaction
   ): Promise<Transaction> {
-    // Validate sufficient balance
     const account = await this.getAccount(accountNumber);
-    if (account.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
 
     // Substract balance
     await this.patchAccount(account.id, new PatchAccountDto({
