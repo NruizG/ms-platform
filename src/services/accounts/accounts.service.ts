@@ -92,43 +92,43 @@ export class AccountsService {
     })
   }
 
-  // public async withdraw(
-  //   accountNumber: number,
-  //   transaction: Transaction
-  // ): Promise<Transaction> {
-  //   // Validate sufficient balance
-  //   const account = await this.getAccount(accountNumber);
-  //   if (account.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
+  public async withdraw(
+    customerDni: string,
+    transaction: Transaction
+  ): Promise<Transaction> {
+    // Validate sufficient balance
+    const account = await this.getAccount(customerDni);
+    if (account.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
+    
+    // Substract balance
+    await this.patchAccount(account.id, new PatchAccountDto({
+      balance: (account.balance - transaction.amount)
+    }));
 
-  //   // Substract balance
-  //   await this.patchAccount(account.id, new PatchAccountDto({
-  //     balance: (account.balance - transaction.amount)
-  //   }));
+    // Create transaction
+    return await this.transactionService.createTransaction({
+      amount: transaction.amount,
+      type: TransactionType.WITHDRAW,
+      account: account.id
+    });
+  }
 
-  //   // Create transaction
-  //   return await this.transactionService.createTransaction({
-  //     amount: transaction.amount,
-  //     type: TransactionType.WITHDRAW,
-  //     account: account.id
-  //   });
-  // }
+  public async loadBalance(
+    customerDni: string,
+    transaction: Transaction
+  ): Promise<Transaction> {
+    const account = await this.getAccount(customerDni);
 
-  // public async loadBalance(
-  //   accountNumber: number,
-  //   transaction: Transaction
-  // ): Promise<Transaction> {
-  //   const account = await this.getAccount(accountNumber);
+    // Substract balance
+    await this.patchAccount(account.id, new PatchAccountDto({
+      balance: (account.balance + transaction.amount)
+    }));
 
-  //   // Substract balance
-  //   await this.patchAccount(account.id, new PatchAccountDto({
-  //     balance: (account.balance + transaction.amount)
-  //   }));
-
-  //   // Create transaction
-  //   return await this.transactionService.createTransaction({
-  //     amount: transaction.amount,
-  //     type: TransactionType.DEPOSIT,
-  //     account: account.id
-  //   });
-  // }
+    // Create transaction
+    return await this.transactionService.createTransaction({
+      amount: transaction.amount,
+      type: TransactionType.DEPOSIT,
+      account: account.id
+    });
+  }
 }
