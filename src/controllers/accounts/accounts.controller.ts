@@ -7,32 +7,32 @@ import { AccountsService } from 'src/services/accounts/accounts.service';
 export class AccountsController {
   constructor(private accountService: AccountsService) { }
 
-  @Post(':number/transfer')
+  @Post(':dni/transfer')
   @UsePipes(ValidationPipe)
   public login(
-    @Headers('accountNumber') originAccount: number,
-    @Param('number') destinationAccount,
+    @Headers('customerDni') customerDni: string,
+    @Param('dni') destinationDni,
     @Body() transaction: TransactionRQ
   ): Promise<Transaction> {
-    return this.accountService.transferFounds(originAccount, destinationAccount,
+    return this.accountService.transferFounds(customerDni, destinationDni,
       transaction);
   }
 
-  @Post('/withdraw')
-  @UsePipes(ValidationPipe)
-  public withdraw(
-    @Headers('accountNumber') acount: number,
-    @Body() transaction: TransactionRQ
-  ): Promise<Transaction> {
-    return this.accountService.withdraw(acount, transaction);
-  }
+  // @Post('/withdraw')
+  // @UsePipes(ValidationPipe)
+  // public withdraw(
+  //   @Headers('accountNumber') acount: number,
+  //   @Body() transaction: TransactionRQ
+  // ): Promise<Transaction> {
+  //   return this.accountService.withdraw(acount, transaction);
+  // }
 
-  @Post('/deposit')
-  @UsePipes(ValidationPipe)
-  public loadBalance(
-    @Headers('accountNumber') acount: number,
-    @Body() transaction: TransactionRQ
-  ): Promise<Transaction> {
-    return this.accountService.loadBalance(acount, transaction);
-  }
+  // @Post('/deposit')
+  // @UsePipes(ValidationPipe)
+  // public loadBalance(
+  //   @Headers('accountNumber') acount: number,
+  //   @Body() transaction: TransactionRQ
+  // ): Promise<Transaction> {
+  //   return this.accountService.loadBalance(acount, transaction);
+  // }
 }

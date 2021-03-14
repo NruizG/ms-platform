@@ -25,18 +25,18 @@ export class AccountsService {
   }
 
   public async transferFounds(
-    originAccount: number,
-    destinationAccount:number,
+    customerDni: string,
+    destinationDni: string,
     transaction: TransactionRQ
   ): Promise<Transaction> {
     // Validate sufficient balance
-    const transferor = await this.getAccount(originAccount);
+    const transferor = await this.getAccount(customerDni);
     if (transferor.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
+
     // Checks valid destinationAccount
-    const transferee = await this.getAccount(destinationAccount);
+    const transferee = await this.getAccount(destinationDni);
 
     // Subtract amount of origin account
-
     await this.patchAccount(transferor.id, new PatchAccountDto({
       balance: (transferor.balance - transaction.amount)
     }));
@@ -46,14 +46,14 @@ export class AccountsService {
       amount: transaction.amount,
       type: TransactionType.TRANSFEROUT,
       account: transferor.id
-    }) ;
-    // Add amount to destination account
+    });
 
+    // Add amount to destination account
     await this.patchAccount(transferee.id, new PatchAccountDto({
       balance: (transferee.balance + transaction.amount)
     }));
-    // Create transaction
 
+    // Create transaction
     await this.transactionService.createTransaction({
       amount: transaction.amount,
       type: TransactionType.TRANSFERIN,
@@ -63,10 +63,11 @@ export class AccountsService {
     return originTransaction;
   }
 
-  public async getAccount(accountNumber: number): Promise<AccountRS> {
+  public async getAccount(customerDni: string): Promise<AccountRS> {
     return new Promise<AccountRS>(resolve => {
       const query = RequestQueryBuilder.create()
-        .setFilter({ field: 'number', operator: '$eq', value: accountNumber });
+        .setJoin({ field: 'customer'})
+        .setFilter({ field: 'customer.dni', operator: '$eq', value: customerDni });
       this.http.get(`${this.path}/accounts?${this.parser.parse(query)}`)
         .subscribe(response => {
           if (response.data.length) {
@@ -91,43 +92,43 @@ export class AccountsService {
     })
   }
 
-  public async withdraw(
-    accountNumber: number,
-    transaction: Transaction
-  ): Promise<Transaction> {
-    // Validate sufficient balance
-    const account = await this.getAccount(accountNumber);
-    if (account.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
+  // public async withdraw(
+  //   accountNumber: number,
+  //   transaction: Transaction
+  // ): Promise<Transaction> {
+  //   // Validate sufficient balance
+  //   const account = await this.getAccount(accountNumber);
+  //   if (account.balance <= transaction.amount) throw new MethodNotAllowedException('INSUFFICIENT_FUNDS');
 
-    // Substract balance
-    await this.patchAccount(account.id, new PatchAccountDto({
-      balance: (account.balance - transaction.amount)
-    }));
+  //   // Substract balance
+  //   await this.patchAccount(account.id, new PatchAccountDto({
+  //     balance: (account.balance - transaction.amount)
+  //   }));
 
-    // Create transaction
-    return await this.transactionService.createTransaction({
-      amount: transaction.amount,
-      type: TransactionType.WITHDRAW,
-      account: account.id
-    });
-  }
+  //   // Create transaction
+  //   return await this.transactionService.createTransaction({
+  //     amount: transaction.amount,
+  //     type: TransactionType.WITHDRAW,
+  //     account: account.id
+  //   });
+  // }
 
-  public async loadBalance(
-    accountNumber: number,
-    transaction: Transaction
-  ): Promise<Transaction> {
-    const account = await this.getAccount(accountNumber);
+  // public async loadBalance(
+  //   accountNumber: number,
+  //   transaction: Transaction
+  // ): Promise<Transaction> {
+  //   const account = await this.getAccount(accountNumber);
 
-    // Substract balance
-    await this.patchAccount(account.id, new PatchAccountDto({
-      balance: (account.balance + transaction.amount)
-    }));
+  //   // Substract balance
+  //   await this.patchAccount(account.id, new PatchAccountDto({
+  //     balance: (account.balance + transaction.amount)
+  //   }));
 
-    // Create transaction
-    return await this.transactionService.createTransaction({
-      amount: transaction.amount,
-      type: TransactionType.DEPOSIT,
-      account: account.id
-    });
-  }
+  //   // Create transaction
+  //   return await this.transactionService.createTransaction({
+  //     amount: transaction.amount,
+  //     type: TransactionType.DEPOSIT,
+  //     account: account.id
+  //   });
+  // }
 }
