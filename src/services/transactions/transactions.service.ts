@@ -26,11 +26,12 @@ export class TransactionsService {
     });
   }
 
-  public async getHistory(accountNumber: number): Promise<Transaction[]> {
+  public async getHistory(customerDni: string): Promise<Transaction[]> {
     return new Promise((resolve, reject) => {
       const query = RequestQueryBuilder.create()
-        .setFilter({ field: 'number', operator: '$eq', value: accountNumber})
-        .setJoin({ field: 'transactions' });
+      .setJoin({ field: 'customer' })
+      .setJoin({ field: 'transactions' })
+      .setFilter({ field: 'customer.dni', operator: '$eq', value: customerDni});
       this.http.get(`${this.path}/accounts?${this.parser.parse(query)}`)
         .subscribe(response => {
           if (!response.data.length) throw new NotFoundException();

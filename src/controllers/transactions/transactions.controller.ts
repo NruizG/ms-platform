@@ -9,8 +9,8 @@ export class TransactionsController {
   @Get('history')
   @UsePipes(ValidationPipe)
   public validateToken(
-    @Headers('accountNumber') account: number
+    @Headers('customerDni') customerDni: string
   ): Promise<Transaction[]> {
-    return this.transactionService.getHistory(account);
+    return this.transactionService.getHistory(customerDni);
   }
 }
