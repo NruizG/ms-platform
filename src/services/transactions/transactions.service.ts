@@ -1,6 +1,8 @@
-import { BadRequestException, HttpService, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpService, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RequestQueryBuilder } from '@nestjsx/crud-request';
 import { Transaction } from 'src/models/transaction.model';
+import { ParserService } from '../parser/parser.service';
 
 @Injectable()
 export class TransactionsService {
@@ -8,7 +10,8 @@ export class TransactionsService {
 
   constructor(
     private http: HttpService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private parser: ParserService
   ) {
     this.path = this.configService.get('MS_DATA');
   }
@@ -20,6 +23,21 @@ export class TransactionsService {
       }, err => {
         throw new BadRequestException(err);
       });
+    });
+  }
+
+  public async getHistory(accountNumber: number): Promise<Transaction[]> {
+    return new Promise((resolve, reject) => {
+      const query = RequestQueryBuilder.create()
+        .setFilter({ field: 'number', operator: '$eq', value: accountNumber})
+        .setJoin({ field: 'transactions' });
+      this.http.get(`${this.path}/accounts?${this.parser.parse(query)}`)
+        .subscribe(response => {
+          if (!response.data.length) throw new NotFoundException();
+          resolve(response.data[0].transactions.map(transaction => new Transaction(transaction)));
+        }, error => {
+          throw new BadRequestException();
+        });
     });
   }
 }
