@@ -31,6 +31,7 @@ export class TransactionsService {
       const query = RequestQueryBuilder.create()
       .setJoin({ field: 'customer' })
       .setJoin({ field: 'transactions' })
+      .sortBy({ field: 'transactions.createdAt', order: 'DESC'})
       .setFilter({ field: 'customer.dni', operator: '$eq', value: customerDni});
       this.http.get(`${this.path}/accounts?${this.parser.parse(query)}`)
         .subscribe(response => {
