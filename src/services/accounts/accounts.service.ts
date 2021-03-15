@@ -64,7 +64,7 @@ export class AccountsService {
   }
 
   public async getAccount(customerDni: string): Promise<AccountRS> {
-    return new Promise<AccountRS>(resolve => {
+    return new Promise<AccountRS>((resolve, rejects) => {
       const query = RequestQueryBuilder.create()
         .setJoin({ field: 'customer'})
         .setFilter({ field: 'customer.dni', operator: '$eq', value: customerDni });
@@ -73,21 +73,21 @@ export class AccountsService {
           if (response.data.length) {
             resolve(new AccountRS(response.data[0]));
           } else {
-            throw new NotFoundException('NON-EXISTENT_ACCOUNT');
+            rejects(new NotFoundException('NON-EXISTENT_ACCOUNT'));
           }
         }, error => {
-          throw new BadRequestException();
+          rejects(new BadRequestException());
         })
     })
   }
 
   public async patchAccount(accountId: number, payload: PatchAccountDto): Promise<AccountRS> {
-    return new Promise<AccountRS>(resolve => {
+    return new Promise<AccountRS>((resolve, rejects) => {
       this.http.patch(`${this.path}/accounts/${accountId}`, payload)
         .subscribe(response => {
           resolve(new AccountRS(response.data[0]));
         }, error => {
-          throw new BadRequestException();
+          rejects(new BadRequestException());
         })
     })
   }
