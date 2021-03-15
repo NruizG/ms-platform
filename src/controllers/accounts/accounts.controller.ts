@@ -1,4 +1,5 @@
-import { Body, Controller, Post, UsePipes, ValidationPipe, Headers, Param } from '@nestjs/common';
+import { Body, Controller, Post, UsePipes, ValidationPipe, Headers, Param, Get } from '@nestjs/common';
+import { AccountRS } from 'src/dto/account-rs.dto';
 import { TransactionRQ } from 'src/dto/transaction-rq.dto';
 import { Transaction } from 'src/models/transaction.model';
 import { AccountsService } from 'src/services/accounts/accounts.service';
@@ -6,6 +7,14 @@ import { AccountsService } from 'src/services/accounts/accounts.service';
 @Controller('accounts')
 export class AccountsController {
   constructor(private accountService: AccountsService) { }
+
+  @Get('info')
+  @UsePipes(ValidationPipe)
+  public getAccountInfo(
+    @Headers('customerDni') customerDni: string,
+  ): Promise<AccountRS> {
+    return this.accountService.getAccount(customerDni);
+  }
 
   @Post(':dni/transfer')
   @UsePipes(ValidationPipe)
